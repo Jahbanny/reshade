@@ -2169,11 +2169,15 @@ void reshade::runtime::draw_gui_settings()
 				modified = true;
 			}
 
-			if (_screenshot_format == 1)
+			// The HDR dropdown maps any non-JPEG-XL format to "PNG", so treat the
+			// format as PNG whenever it is not JPEG XL to stay in sync with what the
+			// dropdown is currently displaying (it only writes the value on change).
+			if (_screenshot_format != 3)
 			{
-				modified |= ImGui::Checkbox(_("Include cICP chunk"), &_screenshot_include_cicp);
+				modified |= ImGui::Checkbox(_("Write cICP tag (Discord HDR bug)"), &_screenshot_include_cicp);
 				ImGui::SetItemTooltip(_("Include the cICP color chunk in HDR PNG screenshots.\n"
-					"Uncheck to fix image display issues in Discord."));
+					"Discord has a bug where it misreads the cICP tag, causing washed-out HDR images.\n"
+					"Uncheck to work around it."));
 			}
 		}
 		else

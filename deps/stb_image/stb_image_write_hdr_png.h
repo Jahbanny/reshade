@@ -234,7 +234,8 @@ STBIWDEF int stbi_write_hdr_png_to_func(stbi_write_func *func, void *context, in
 	if (!data_compressed)
 		return 0;
 
-	file_size = 8 + (12 + 13) + (12 + comp) + (include_cicp ? 16 : 0) + (12 + 32) + (12 + compressed_size) + 12;
+	const int iccp_payload_size = (color_primaries == 9 && transfer_function == 16) ? 20 + 1 + (int)sizeof(ICC_RGB_D65_202_Rel_PeQ) : 0;
+	file_size = 8 + (12 + 13) + (12 + comp) + (include_cicp ? 16 : 0) + (iccp_payload_size ? 12 + iccp_payload_size : 0) + (12 + 32) + (12 + compressed_size) + 12;
 	file_data = (unsigned char *)STBIW_MALLOC(file_size);
 	if (!file_data)
 		return 0;
@@ -277,6 +278,20 @@ STBIWDEF int stbi_write_hdr_png_to_func(stbi_write_func *func, void *context, in
 			*o++ = 1; // Video full range flag
 		}
 		stbiw__wpcrc(&o, 4);
+	}
+
+	if (color_primaries == 9 && transfer_function == 16)
+	{
+		// Embedded ICC profile (Rec2100PQ) — ensures correct display in viewers
+		// that do not support the cICP chunk (e.g. Discord, web browsers)
+		stbiw__wp32(o, 20 + 1 + sizeof(ICC_RGB_D65_202_Rel_PeQ));
+		stbiw__wptag(o, "iCCP");
+		{
+			memcpy(o, "RGB_D65_202_Rel_PeQ", 20); o += 20;
+			*o++ = 0; // Compression method (zlib)
+			memcpy(o, ICC_RGB_D65_202_Rel_PeQ, sizeof(ICC_RGB_D65_202_Rel_PeQ)); o += sizeof(ICC_RGB_D65_202_Rel_PeQ);
+		}
+		stbiw__wpcrc(&o, 20 + 1 + sizeof(ICC_RGB_D65_202_Rel_PeQ));
 	}
 
 	// Primary chromaticities and white point
