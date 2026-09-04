@@ -1057,6 +1057,7 @@ void reshade::runtime::load_config()
 	config_get("SCREENSHOT", "SavePath", _screenshot_path);
 	config_get("SCREENSHOT", "SoundPath", _screenshot_sound_path);
 	config_get("SCREENSHOT", "ClearAlpha", _screenshot_clear_alpha);
+	config_get("SCREENSHOT", "IncludeCICP", _screenshot_include_cicp);
 	config_get("SCREENSHOT", "FileFormat", _screenshot_format);
 	config_get("SCREENSHOT", "FileNaming", _screenshot_name);
 	config_get("SCREENSHOT", "JPEGQuality", _screenshot_jpeg_quality);
@@ -1120,6 +1121,7 @@ void reshade::runtime::save_config() const
 	config.set("SCREENSHOT", "SavePath", _screenshot_path);
 	config.set("SCREENSHOT", "SoundPath", _screenshot_sound_path);
 	config.set("SCREENSHOT", "ClearAlpha", _screenshot_clear_alpha);
+	config.set("SCREENSHOT", "IncludeCICP", _screenshot_include_cicp);
 	config.set("SCREENSHOT", "FileFormat", _screenshot_format);
 	config.set("SCREENSHOT", "FileNaming", _screenshot_name);
 	config.set("SCREENSHOT", "JPEGQuality", _screenshot_jpeg_quality);
@@ -4948,7 +4950,8 @@ void reshade::runtime::save_screenshot(const char *postfix_in)
 						reinterpret_cast<uint16_t *>(pixels.data()),
 						0,
 						static_cast<unsigned char>(JXL_PRIMARIES_2100),
-						static_cast<unsigned char>(_back_buffer_color_space == api::color_space::hdr10_hlg ? JXL_TRANSFER_FUNCTION_HLG : JXL_TRANSFER_FUNCTION_PQ)) != 0;
+						static_cast<unsigned char>(_back_buffer_color_space == api::color_space::hdr10_hlg ? JXL_TRANSFER_FUNCTION_HLG : JXL_TRANSFER_FUNCTION_PQ),
+						_screenshot_include_cicp ? 1 : 0) != 0;
 					break;
 				case 3:
 				case 5: // HDR JPEG XL

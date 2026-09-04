@@ -2168,6 +2168,13 @@ void reshade::runtime::draw_gui_settings()
 				_screenshot_format = hdr_screenshot_format == 1 ? 3 : 1;
 				modified = true;
 			}
+
+			if (_screenshot_format == 1)
+			{
+				modified |= ImGui::Checkbox(_("Include cICP chunk"), &_screenshot_include_cicp);
+				ImGui::SetItemTooltip(_("Include the cICP color chunk in HDR PNG screenshots.\n"
+					"Uncheck to fix image display issues in Discord."));
+			}
 		}
 		else
 		{
